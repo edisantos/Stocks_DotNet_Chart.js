@@ -8,12 +8,13 @@ namespace stocks.Models.Display
     public class Entry
     {
         public string Date { get; set; }
-        public double Price { get; set; }
+        public decimal Price { get; set; }
+        public DateTime DateTime { get; set; }
 
         public Entry() { }
 
-        public Entry(string date, double price) {
-            Date = date;
+        public Entry(string dateTime, decimal price) {
+            Date = dateTime;
             Price = price;
         }
 

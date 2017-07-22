@@ -18,6 +18,30 @@ namespace stocks.Controllers
     public class DisplayController : Controller
     {
 
+        static void run(int resultt, int size, DateTime dt, decimal price, List<Entry> list)
+        {
+            for (int i = 0; i < size; i++)
+            {
+                if (resultt > 0)
+                {
+
+                    Entry en = new Entry()
+                    {
+                        DateTime = dt,
+                        Price = price
+                    };
+                    list.Insert((i + 1), en);
+                    return;
+                }
+            }
+
+        }
+
+
+
+
+
+
         private readonly IHostingEnvironment _hostingEnvironment;
 
         public DisplayController(IHostingEnvironment hostingEnvironment)
@@ -167,6 +191,7 @@ namespace stocks.Controllers
         [HttpPost]
         public IActionResult Ticker(Data d)
         {
+            d.Ticker = d.Ticker.ToUpper();
             string JSON;
             CompanyList cc = new CompanyList();
 
@@ -179,8 +204,8 @@ namespace stocks.Controllers
 
                 cc = JsonConvert.DeserializeObject<CompanyList>(JSON);
 
-               
 
+                
 
                 var entry = from c in cc.Companies
                             where c.Symbol == d.Ticker
@@ -217,27 +242,87 @@ namespace stocks.Controllers
 
                 List<string> ss1 = new List<string>();
 
-
+                
 
                 var prices = d.Stock.DailyClosePrice.Single();//TODO: parse date format
 
                 var entries = prices.Select(kvp => new { Date = kvp.Key, Price = kvp.Value });
+
+                List<Entry> list = new List<Entry>();
+
                 foreach (var k in entries)
                 {
-                    string s1 = ($"  {k.Date}: {k.Price}");
-                    ss1.Add(s1);
+                    decimal price = Convert.ToDecimal(($"{k.Price}"));
+                 //   string s1 = ($" {k.Date}:{k.Price} ");
+
+                    DateTime dt = DateTime.Parse(k.Date);
+                    DateTime dt0 = DateTime.Parse(d.Start);
+                    DateTime dtf = DateTime.Parse(d.End);
+
+                    int result1 = DateTime.Compare(dt, dt0);
+                    int result2 = DateTime.Compare(dtf, dt);
+
+                    if (result1 >= 0 && result2 >= 0)
+                    {
+
+                        int result = DateTime.Compare(dt, dt0);
+                        int resultt = 0;
+                        int size = list.Count();
+
+                        if (list.Any() == true)
+                        {
+                            resultt = DateTime.Compare(dt, list[0].DateTime);
+                        }
+
+                        if (result > 0)
+                        {
+                            if (list.Any() == false)
+                            {
+                                Entry en = new Entry()
+                                {
+                                    DateTime = dt,
+                                    Price = Convert.ToDecimal(($"{k.Price}"))
+                                };
+                                list.Insert(0, en);
+                            }
+                            else if (resultt < 0)
+                            {
+                                Entry en = new Entry()
+                                {
+                                    DateTime = dt,
+                                    Price = Convert.ToDecimal(($"{k.Price}"))
+                                };
+                                list.Insert(0, en);
+                            }
+                            else
+                            {
+                                run(resultt, size, dt, price, list);
+                            }
+
+
+                        }
+                    }
 
                 }
 
 
-                string strr = "";
-                foreach (string e in ss1)
+
+              
+                list.Sort((x, y) => DateTime.Compare(x.DateTime, y.DateTime));
+
+
+                string[] dates = new string[list.Count];
+                for (int i = 0; i < list.Count; i++) {
+                    dates[i] = list[i].DateTime.ToString("M/d/yy");
+                }
+                d.Dates = dates;
+
+                decimal[] prices2 = new decimal[list.Count];
+                for (int i = 0; i < list.Count; i++)
                 {
-                    strr = strr + e + "\n";
+                    prices2[i] = list[i].Price;
                 }
-
-                d.Strr = strr;
-
+                d.Prices = prices2;
 
 
 
@@ -245,7 +330,7 @@ namespace stocks.Controllers
 
 
 
-             
+
 
                 return View(d);
 

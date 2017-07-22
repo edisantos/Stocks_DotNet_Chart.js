@@ -17,9 +17,13 @@ namespace stocks.Models.Display
 
         public Stock Stock { get; set; }
 
+        public string[] Dates { get; set; }
+        public decimal[] Prices { get; set; }
 
 
-        public Data() { }
+        public Data() {
+            Dates = new string[] { "6/7", "6/5", "3/6","6/7", "6/5", "3/6","8/9","4/5","3/2" };
+        }
 
         public Data(string ticker, string start, string end, string name, string industry, List<Entry> entries)
         {
