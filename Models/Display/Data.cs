@@ -22,6 +22,9 @@ namespace stocks.Models.Display
 
 
         public Data() {
+            Ticker = "ATVI";
+            Start = "1/5/2017";
+            End = "3/13/2017";
             Dates = new string[] { "6/7", "6/5", "3/6","6/7", "6/5", "3/6","8/9","4/5","3/2" };
         }
 

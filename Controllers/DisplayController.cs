@@ -11,20 +11,16 @@ using Microsoft.AspNetCore.Hosting;
 
 
 
-// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace stocks.Controllers
 {
     public class DisplayController : Controller
     {
-
         static void run(int resultt, int size, DateTime dt, decimal price, List<Entry> list)
         {
             for (int i = 0; i < size; i++)
             {
                 if (resultt > 0)
                 {
-
                     Entry en = new Entry()
                     {
                         DateTime = dt,
@@ -34,13 +30,7 @@ namespace stocks.Controllers
                     return;
                 }
             }
-
         }
-
-
-
-
-
 
         private readonly IHostingEnvironment _hostingEnvironment;
 
@@ -49,144 +39,13 @@ namespace stocks.Controllers
             _hostingEnvironment = hostingEnvironment;
         }
 
-
-
-
-
         // GET: /<controller>/
         public IActionResult Index()
         {
-            return View();
+            Data d = new Data();
+            return View(d);
         }
 
-
-
-
-
-
-        [HttpGet]
-        public IActionResult GetCompanyInfo()
-        {
-
-            string JSON;
-            CompanyList cc = new CompanyList();
-
-
-            try
-            {
-                string webRootPath = _hostingEnvironment.WebRootPath;
-                string contentRootPath = _hostingEnvironment.ContentRootPath;
-                JSON = System.IO.File.ReadAllText(contentRootPath + "/companyInfo.json");
-
-                cc = JsonConvert.DeserializeObject<CompanyList>(JSON);
-
-                Company c0 = cc.Companies[0];
-                string s0 = c0.Name;
-                
-                string str = cc.Companies.ToString();
-
-                return Content(s0);
-
-            }
-            catch (FileNotFoundException)
-            {
-                string err = "Not found";
-                return Content(err);
-            }
-            catch (IOException)
-            {
-                string err = "IO";
-                return Content(err);
-            }
-            catch (Exception e)
-            {
-                string err = "Exception occured: " + e;
-                return Content(err);
-            }
-
-          
-
-
-        }
-
-        [HttpGet]
-        public IActionResult GetStockInfo()
-        {
-            string JSON;
-
-            string str = "";
-
-            try
-            {
-                string webRootPath = _hostingEnvironment.WebRootPath;
-                string contentRootPath = _hostingEnvironment.ContentRootPath;
-                JSON = System.IO.File.ReadAllText(contentRootPath + "/historicalStockData.json");
-
-                var data = new Data();
-
-                var stocks = JsonConvert.DeserializeObject<List<Stock>>(JSON);
-
-                foreach (var stock in stocks)
-                {
-                    if (stock.Name == "ATVI")
-                    {
-                        data.Stock = stock;
-                       
-
-                    }
-                }
-
-                List<string> ss1 = new List<string>();
-              
-
-
-                var prices = data.Stock.DailyClosePrice.Single();//TODO: parse date format
-                
-                  var entries = prices.Select(kvp => new { Date = kvp.Key, Price = kvp.Value });
-                 foreach (var entry in entries)
-                  {
-                      string s1 = ($"  {entry.Date}: {entry.Price}");
-                    ss1.Add(s1);
-                   
-                }
-
-
-                string strr = "";
-                foreach (string e in ss1) {
-                    strr = strr + e + "\n";
-                }
-
-
-
-
-                return Content(strr);
-
-            }
-            catch (FileNotFoundException)
-            {
-                string err = "Not found";
-                return Content(err);
-            }
-            catch (IOException)
-            {
-                string err = "IO";
-                return Content(err);
-            }
-            catch (Exception e)
-            {
-                string err = "Exception occured: " + e;
-                return Content(err);
-            }
-
-
-        }
-
-
-
-
-
-
-      
 
         [HttpPost]
         public IActionResult Ticker(Data d)
@@ -194,86 +53,50 @@ namespace stocks.Controllers
             d.Ticker = d.Ticker.ToUpper();
             string JSON;
             CompanyList cc = new CompanyList();
-
-
             try
             {
                 string webRootPath = _hostingEnvironment.WebRootPath;
                 string contentRootPath = _hostingEnvironment.ContentRootPath;
                 JSON = System.IO.File.ReadAllText(contentRootPath + "/companyInfo.json");
-
                 cc = JsonConvert.DeserializeObject<CompanyList>(JSON);
-
-
-                
-
                 var entry = from c in cc.Companies
                             where c.Symbol == d.Ticker
-                            select c;
-          
+                            select c;    
                 if (entry.FirstOrDefault() != null)
                 {
                     d.Name = entry.FirstOrDefault().Name;
                     d.Industry = entry.FirstOrDefault().Industry;
                 }
-
-
-
-
-
-
-
-
               string JSON2 = System.IO.File.ReadAllText(contentRootPath + "/historicalStockData.json");
-
-               
-
-                var stocks = JsonConvert.DeserializeObject<List<Stock>>(JSON2);
-
+             var stocks = JsonConvert.DeserializeObject<List<Stock>>(JSON2);
                 foreach (var stock in stocks)
                 {
                     if (stock.Name == d.Ticker)
                     {
                         d.Stock = stock;
-
-
                     }
                 }
-
-                List<string> ss1 = new List<string>();
-
-                
-
-                var prices = d.Stock.DailyClosePrice.Single();//TODO: parse date format
-
+                List<string> ss1 = new List<string>();            
+                var prices = d.Stock.DailyClosePrice.Single();
                 var entries = prices.Select(kvp => new { Date = kvp.Key, Price = kvp.Value });
-
                 List<Entry> list = new List<Entry>();
-
                 foreach (var k in entries)
                 {
                     decimal price = Convert.ToDecimal(($"{k.Price}"));
-                 //   string s1 = ($" {k.Date}:{k.Price} ");
-
                     DateTime dt = DateTime.Parse(k.Date);
                     DateTime dt0 = DateTime.Parse(d.Start);
                     DateTime dtf = DateTime.Parse(d.End);
-
                     int result1 = DateTime.Compare(dt, dt0);
                     int result2 = DateTime.Compare(dtf, dt);
-
                     if (result1 >= 0 && result2 >= 0)
                     {
-
                         int result = DateTime.Compare(dt, dt0);
                         int resultt = 0;
                         int size = list.Count();
-
                         if (list.Any() == true)
                         {
                             resultt = DateTime.Compare(dt, list[0].DateTime);
                         }
-
                         if (result > 0)
                         {
                             if (list.Any() == false)
@@ -298,42 +121,22 @@ namespace stocks.Controllers
                             {
                                 run(resultt, size, dt, price, list);
                             }
-
-
                         }
                     }
-
-                }
-
-
-
-              
+                }             
                 list.Sort((x, y) => DateTime.Compare(x.DateTime, y.DateTime));
-
-
                 string[] dates = new string[list.Count];
                 for (int i = 0; i < list.Count; i++) {
                     dates[i] = list[i].DateTime.ToString("M/d/yy");
                 }
                 d.Dates = dates;
-
                 decimal[] prices2 = new decimal[list.Count];
                 for (int i = 0; i < list.Count; i++)
                 {
                     prices2[i] = list[i].Price;
                 }
                 d.Prices = prices2;
-
-
-
-
-
-
-
-
-
                 return View(d);
-
             }
             catch (FileNotFoundException)
             {
@@ -349,44 +152,7 @@ namespace stocks.Controllers
             {
                 string err = "Exception occured: " + e;
                 return Content(err);
-            }
-
-
-
-
-
-            
+            }         
         }
-
-
-
-        [HttpGet("[action]/{tkr}")]
-        public IActionResult Ticker(string t)
-        {
-            Data data = new Data();
-
-
-            string s = "lolol";
-
-
-            return View(s);
-        }
-
-
-
-
-
-        [HttpGet]
-        public IActionResult GetLol()
-        {
-            string p = "lol";
-
-            return Content(p);
-
-           
-        }
-
-
-
     }
 }
