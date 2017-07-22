@@ -47,6 +47,19 @@ namespace stocks.Controllers
         }
 
 
+
+        [HttpPost]
+        public IActionResult CompanyJSON()
+        {
+            string str = "";
+            string webRootPath = _hostingEnvironment.WebRootPath;
+            string contentRootPath = _hostingEnvironment.ContentRootPath;
+            str = System.IO.File.ReadAllText(contentRootPath + "/companyInfo.json");
+
+            return Content(str);
+        }
+
+
         [HttpPost]
         public IActionResult Ticker(Data d)
         {
