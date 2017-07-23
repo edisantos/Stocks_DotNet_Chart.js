@@ -3,52 +3,45 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http;
-using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Hosting;
-using Newtonsoft.Json;
 using stocks.Models.Display;
+using Newtonsoft.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace stocks.Controllers
 {
     [Route("api/[controller]")]
-    public class CompanyController : Controller
+    public class StockController : Controller
     {
-
-
         private readonly IHostingEnvironment _hostingEnvironment;
 
-        public CompanyController(IHostingEnvironment hostingEnvironment)
+        public StockController(IHostingEnvironment hostingEnvironment)
         {
             _hostingEnvironment = hostingEnvironment;
         }
 
 
 
-        // /api/company
+        // /api/stock
         [HttpGet]
-        public IEnumerable<Company> GetAll()
+        public IEnumerable<Stock> GetAll()
         {
             string webRootPath = _hostingEnvironment.WebRootPath;
             string contentRootPath = _hostingEnvironment.ContentRootPath;
-            string JSON = System.IO.File.ReadAllText(contentRootPath + "/companyInfo.json");
-            var cc = JsonConvert.DeserializeObject<CompanyList>(JSON);
-            List<Company> ccc = cc.Companies;
+            string JSON2 = System.IO.File.ReadAllText(contentRootPath + "/historicalStockData.json");
+            var cc = JsonConvert.DeserializeObject<List<Stock>>(JSON2);
+            
 
 
-            return ccc;
+            return cc;
         }
 
 
+     
 
-
-
-
-
-        // GET api/values/5
-        [HttpGet("{id}")]
+    // GET api/values/5
+    [HttpGet("{id}")]
         public string Get(int id)
         {
             return "value";
